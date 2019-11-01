@@ -1,8 +1,0 @@
-#compilation assembleur
-#echo $0,$1
-echo "Compilation 64 bits de "$1".s"
-as -o $1".o"   $1".s" -a >listing.txt
-#gcc -o $1 $1".o"  -e main
-ld -o $1 $1".o"  -e main
-ls -l $1*  
-echo "Fin de compilation."
