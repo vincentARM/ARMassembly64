@@ -41,3 +41,41 @@ libbin1\@:  .asciz "\str"
 .align 8
 smacro1affbintit\@:
 .endm
+/********************************************************************/
+/* macro d'enrobage affichage de 6 registres en hexa  avec étiquette */
+/********************************************************************/
+.macro affregtit str, num
+    stp x0,x1,[sp,-32]!        // save  registre
+    mrs x1,nzcv             // save du registre d'état
+    str x1,[sp,16]          // save  registres
+    mov x0,#\num            // premier registre a afficher */
+    adr x1,libreg1\@        // utilisation de adr suite pb gros programme
+    stp x0,x1,[sp,-16]!
+    ldp x0,x1,[sp,16]
+    bl affRegistres16        // affichage de 6 registres en hexa
+    //ldp x0,x1,[sp],16
+    ldr x1,[sp,16]
+    msr nzcv,x1             // restaur registre d'état 
+    ldp x0,x1,[sp],32          // on restaure x1 pour avoir une pile réalignée
+    b smacro1affregtit\@    // pour sauter le stockage de la chaine.
+libreg1\@:  .asciz "\str"
+.align 8
+smacro1affregtit\@:
+.endm
+/********************************************************************/
+/* macro d'enrobage affichage binaire d'un registre  avec étiquette */
+/********************************************************************/
+.macro affetattit str 
+    str x1,[sp,-32]!        // save  registre
+    //mrs x1,nzcv             // save du registre d'état
+    //str x1,[sp,16]          // save  registres
+    adr x1,libetat1\@        // utilisation de adr suite pb gros programme
+    bl affichetat        // affichage du registre en base 2
+    //ldr x1,[sp,16]
+    //msr nzcv,x1             // restaur registre d'état 
+    ldr x1,[sp],32          // on restaure x1 pour avoir une pile réalignée
+    b smacro1affetattit\@    // pour sauter le stockage de la chaine.
+libetat1\@:  .asciz "\str"
+.align 8
+smacro1affetattit\@:
+.endm
