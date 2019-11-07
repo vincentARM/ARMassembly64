@@ -79,3 +79,34 @@ libetat1\@:  .asciz "\str"
 .align 8
 smacro1affetattit\@:
 .endm
+/****************************************************/
+/* macro de vidage memoire                          */
+/****************************************************/
+/* n'affiche que les adresses ou les registre r0 et r1      */
+.macro affmemtit str, adr, nb 
+    stp x0,x1,[sp,-32]!        // save  registre
+    stp x2,x3,[sp,16]          // save  registre
+    mrs x3,nzcv                // save du registre d'état dans x3
+    adr x2,lib1\@              // recup adresse libellé passé dans str
+    .ifc \adr,x1
+    mov x0,x1
+    .else
+    .ifnc \adr,x0
+    ldr x0,zon1\@
+    .endif
+    .endif
+    mov x1,#\nb                // nombre de bloc a afficher
+    bl affmemoireTit
+    msr nzcv,x3                // restaur registre d'état
+    ldp x0,x1,[sp],16          // restaur des registre
+    ldp x2,x3,[sp],16          // restaur des registr
+    b smacro1affmemtit\@       // pour sauter le stockage de la chaine.
+.ifnc \adr,x0
+.ifnc \adr,x1
+zon1\@:  .quad \adr
+.endif
+.endif
+lib1\@:  .asciz "\str"
+.align 4
+smacro1affmemtit\@:
+.endm
