@@ -1,0 +1,2 @@
+ligne=10
+fichier=fic2.txt
