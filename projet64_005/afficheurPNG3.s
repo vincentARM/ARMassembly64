@@ -4,6 +4,7 @@
 /* modèle 3B+ 1GO Système LINUX 64 Bits Buster  voir github Sakaki */
 /* création fenetre X11 pour affichage image png  */
 /* affichage image png à partir de zones mémoire */
+/* allocation place sur le tas */
 
     /* attention x19  pointeur display */
     /* attention x20  pointeur ecran   */
@@ -137,13 +138,10 @@ szTitreFenRedS:          .asciz "PiS"
 szRouge:                 .asciz "red"
 szBlack:                 .asciz "black"
 szWhite:                 .asciz "white"
-//szNomFichier:          .asciz "img2"
 /* libellé special pour correction pb fermeture */
 szLibDW:                 .asciz "WM_DELETE_WINDOW"
 
-szNomRepDepart:          .asciz "."
-
-//szModeOpen:              .asciz "rb"
+//szNomRepDepart:          .asciz "."
 
 /* polices de caracteres */
 szNomPolice:             .asciz  "-*-helvetica-bold-*-normal-*-14-*"
@@ -171,14 +169,6 @@ ptGC2:                  .skip 8     // pointeur contexte graphique 2
 ptPolice:               .skip 8     // pointeur police de caractères
 ptPolice1:              .skip 8     // pointeur police de caractères 1
 ptCurseur:              .skip 8     // pointeur curseur
-ptImg1:                 .skip 8     // pointeur image
-ptImg2:                 .skip 8
-ptIcone:                .skip 8
-ptIcone2:               .skip 8
-qLargeurIcone:          .skip 8
-qHauteurIcone:          .skip 8
-x_hot:                  .skip 8
-y_hot:                  .skip 8
 
 .align 4
 wmDeleteMessage:        .skip 16      // identification message de fermeture
@@ -214,7 +204,6 @@ stFenetreFin:          .skip  Win_fin     // structure de la fin de la table des
 .align 4
 qColorType:            .skip 8
 qBit_depth:            .skip 8
-tablePixels:           .skip 4 * 2000 * 1000  // taille à suivre en fonction des images
 /**********************************************/
 /* -- Code section                            */
 /**********************************************/
@@ -369,8 +358,8 @@ ConnexionServeur:                      // fonction
     //mov x1,x20
     //affmemtit ecrans_ecr x1 10
 100:
-    ldp x2,lr,[sp],16          // restaur des  2 registres
-    ret                        // retour adresse lr x30
+    ldp x2,lr,[sp],16                // restaur des  2 registres
+    ret                             // retour adresse lr x30
 /********************************************************************/
 /*   Chargement des polices utilisées                             ***/
 /********************************************************************/    
@@ -473,33 +462,30 @@ qAdrFront:    .quad Front
 /* x20 le pointeur écran */
 /* x22 le poniteur structure fenêtre */
 /* x21 contiendra l'identifiant de la fenêtre  */
-creationFenetrePrincipale:                     // fonction
-    stp x22,lr,[sp,-16]!                   // save  registres 
-    //mov x19,x0                             // save du Display
-    //mov x20,x1                             // save de l'écran
-    //mov x22,x2                             // save de la structure
-    //affregtit debutfen 0
-                                          // calcul de la position X pour centrer la fenetre
-    ldr x2,[x20,#Screen_width]             // récupération de la largeur de l'écran racine
-    sub x2,x2,#LARGEUR                       // soustraction de la largeur de notre fenêtre
-    lsr x2,x2,#1                             // division par 2 et résultat pour le parametre 3
-    ldr x3,[x20,#Screen_height]            // récupération de la hauteur de l'écran racine
-    sub x3,x3,#HAUTEUR                       // soustraction de la hauteur de notre fenêtre
-    lsr x3,x3,#1                             // division par 2 et résultat pour le parametre 4
+creationFenetrePrincipale:                  // fonction
+    stp x22,lr,[sp,-16]!                    // save  registres 
+
+                                            // calcul de la position X pour centrer la fenetre
+    ldr x2,[x20,#Screen_width]              // récupération de la largeur de l'écran racine
+    sub x2,x2,#LARGEUR                      // soustraction de la largeur de notre fenêtre
+    lsr x2,x2,#1                            // division par 2 et résultat pour le parametre 3
+    ldr x3,[x20,#Screen_height]             // récupération de la hauteur de l'écran racine
+    sub x3,x3,#HAUTEUR                      // soustraction de la hauteur de notre fenêtre
+    lsr x3,x3,#1                            // division par 2 et résultat pour le parametre 4
     
     /* CREATION DE LA FENETRE */
-    mov x0,x19                             // display
-    ldr x1,[x20,#Screen_root]              // identification écran racine
-                                          // x2 et x3 ont été calculés plus haut
-    mov x4,#LARGEUR                       // largeur 
-    mov x5,#HAUTEUR                       // hauteur
-    mov x6,#3                             // bordure
-    ldr x7,[x20,#Screen_black_pixel]       // couleur bordure
+    mov x0,x19                              // display
+    ldr x1,[x20,#Screen_root]               // identification écran racine
+                                            // x2 et x3 ont été calculés plus haut
+    mov x4,#LARGEUR                         // largeur 
+    mov x5,#HAUTEUR                         // hauteur
+    mov x6,#3                               // bordure
+    ldr x7,[x20,#Screen_black_pixel]        // couleur bordure
     ldr x8,qAdrClosest
-    ldr x8,[x8,#XColor_pixel]             // couleur du fond
-    stp x8,x8,[sp,-16]!                   // passé par la pile
+    ldr x8,[x8,#XColor_pixel]               // couleur du fond
+    stp x8,x8,[sp,-16]!                     // passé par la pile
     bl XCreateSimpleWindow
-    add sp,sp,16                          // alignement pile
+    add sp,sp,16                            // alignement pile
     cmp x0,#0
     beq 98f
     mov x21,x0                             // stockage adresse fenetre dans le registre x9 pour usage ci dessous
@@ -575,20 +561,20 @@ creationFenetrePrincipale:                     // fonction
     mov x0,x21                              // retourne l'identification de la fenetre
     b 100f
     
-98:  // erreur fenetre 
+98:                                        // erreur fenetre 
     ldr x1,qAdrszMessErrfen   
     bl   afficheErreur  
     mov x0,#0                              // code erreur 
     b 100f
-99:    // erreur X11
+99:                                        // erreur X11
     ldr x1,qAdrszMessErreurX11  
     bl   afficheErreur  
     mov x0,#0                              // code erreur 
     b 100f
 
 100:
-    ldp x22,lr,[sp],16          // restaur des  2 registres
-    ret                        // retour adresse lr x30
+    ldp x22,lr,[sp],16                     // restaur des  2 registres
+    ret                                    // retour adresse lr x30
 
 qFenetreMask:             .quad  KeyPressMask|ButtonPressMask|StructureNotifyMask|ExposureMask|EnterWindowMask
 qGris1:                   .quad 0xFFA0A0A0
@@ -608,9 +594,9 @@ qAdrevtFenetrePrincipale: .quad evtFenetrePrincipale
 /********************************************************************/
 /*   Création contexte graphique                                  ***/
 /********************************************************************/    
-/* x0 contient le display, x1 la fenêtre x2 l 'ecran*/
-creationGC:                     // fonction
-    stp x19,lr,[sp,-16]!                   // save  registres 
+/* x19 contient le display, x20 l'écran, x21 la fenêtre */
+creationGC:                    // fonction
+    stp x19,lr,[sp,-16]!       // save  registres 
     /* creation contexte graphique simple */
     mov x0,x19                // adresse du display
     mov x1,x21                // adresse fenetre
@@ -620,7 +606,7 @@ creationGC:                     // fonction
     cmp x0,#0
     beq 99f    
     ldr x1,qAdrptGC
-    str x0,[x1]              // stockage adresse contexte graphique   
+    str x0,[x1]               // stockage adresse contexte graphique   
     mov x23,x0                // et stockage dans x23
     mov x0,x19                // adresse du display 
     mov x1,x23                // adresse GC 
@@ -709,7 +695,7 @@ creationFenetreSec1:                     // fonction
     ldr x4,[x4,#PNG_largeur]
     ldr x5,qAdrstIMGPNG
     ldr x5,[x5,#PNG_hauteur]
-    mov x6,#1                         // bordure
+    mov x6,#1                          // bordure
     ldr x7,[x20,#Screen_white_pixel]   // couleur bordure
     ldr x8,[x20,#Screen_black_pixel]   // couleur du fond
     str x8,[sp,-16]!                   // passé par la pile
@@ -769,7 +755,7 @@ qAdrevtFenetreSec1:  .quad evtFenetreSec1
 gestionEvenements:                     // fonction
     stp x19,lr,[sp,-16]!         // save  registres 
     mov x0,x19                   // adresse du display
-    ldr x1,qAdrevent            // adresse evenements
+    ldr x1,qAdrevent             // adresse evenements
     bl XNextEvent
     ldr x0,qAdrevent
                                 // Quelle fenêtre est concernée ?
@@ -809,8 +795,8 @@ qAdrTableFenetres: .quad TableFenetres
 /********************************************************************/
 // x0 doit contenir le pointeur sur l'evenement
 // sauvegarde des registres
-evtFenetrePrincipale:                     // fonction
-    stp x19,lr,[sp,-16]!                   // save  registres 
+evtFenetrePrincipale:           // fonction
+    stp x19,lr,[sp,-16]!        // save  registres 
     ldr w0,[x0,#XAny_type]      // 4 premiers octets
     cmp w0,#ClientMessage       // cas pour fermeture fenetre sans erreur 
     beq fermetureFen
@@ -825,7 +811,7 @@ evtFenetrePrincipale:                     // fonction
     mov x0,#0
     b 100f
 /***************************************/    
-fermetureFen:                      // clic sur menu systeme */
+fermetureFen:                   // clic sur menu systeme */
     affregtit fermeture 0
     ldr x0,qAdrevent            // evenement de type XClientMessageEvent
     ldr x1,[x0,#XClient_data]   // position code message
@@ -881,10 +867,10 @@ evtboutonsouris:
 // x1 doit contenir l'identification de la fenêtre
 // sauvegarde des registres
 evtFenetreSec1:                     // fonction
-    stp x19,lr,[sp,-16]!                   // save  registres 
+    stp x19,lr,[sp,-16]!            // save  registres 
     ldr x0,qAdrevent
     ldr w0,[x0,#XAny_type]
-    cmp w0,#Expose          // cas d'une modification de la fenetre ou son masquage
+    cmp w0,#Expose                  // cas d'une modification de la fenetre ou son masquage
     bne 2f
     mov x0,x1
     ldr x1,qAdrstIMGPNG
@@ -949,24 +935,22 @@ lectfichierPNG:                     // fonction
     cmp x0,#0
     blt erreur2Fic
     mov x0,x28
-    affmemtit buffer x0 4
-    ldrh w1,[x0,18]
+    //affmemtit buffer x0 4
+    ldrh w1,[x0,18]              // largeur image
     rev w1,w1
-    lsr w1,w1,16
+    lsr w1,w1,16                 // hauteur image
     ldrh w2,[x0,22]
     rev w2,w2
     lsr w2,w2,16
     mul x0,x1,x2
     lsl x0,x0,2
-    affregtit taille 0
-    /* allouer l'espace sur le tas */
-    bl allocPlace          //allouer la place sur le tas suivant taille
+    bl allocPlace                //allouer la place sur le tas suivant taille
     cbz x0,100f
-    mov x23,x0              // save adresse tas dans x23
+    mov x23,x0                  // save adresse tas dans x23
     affregtit finlect 0
 fermetureFic:
     mov x0,x27                  // Fd  fichier
-    mov x8, #CLOSE            // appel fonction systeme pour fermer
+    mov x8, #CLOSE              // appel fonction systeme pour fermer
     svc 0 
     mov x0,x28                 // retourne l'adresse du tas  
     b 100f
@@ -1073,7 +1057,7 @@ chargePNGMem:   // fonction
     bl png_set_palette_to_rgb
 1:
     /* autres vérification à voir */
-    /* puis elles sont vérifièes avec l'appel ci dessous */
+    /* puis elles sont vérifiées avec l'appel ci dessous */
     mov x0,x26                  // pointeur structure lecture
     mov x1,x25                  // pointeur structure info
     ldr x20,qAdrstIMGPNG        // adresse structure image png
@@ -1094,26 +1078,8 @@ chargePNGMem:   // fonction
     bl allocPlace
     cbz x0,100f
     mov x22,x0                // adresse zone pointeurs
-    /* allocation table pixel */
-    /* pour une raison inconnue, cette allocation entraine une erreur
-       de X11 : écrasement mémoire ?? ou autres ?? 
-       Donc utilisation de la table en mémoire BSS
-       et si necessaire de charger plusieurs images 
-       il faudrait passer l'adresse en paramétre  */
-    //ldr x0,[x20,PNG_hauteur]  // hauteur image
-    //ldr x1,[x20,PNG_largeur]  // largeur image
-    //mul x0,x1,x0              // taille en pixel
-    //lsl x0,x0,2               // * 4 octets par pixel
-    //affregtit allocPix 0
-    //bl allocPlace
-    //cbz x0,100f
-    //mov x23,x0                // adresse zone pixel
-    //affregtit allocpix 0
-    //str x0,[x20,PNG_debut_pixel] // et stockage dans structure
     /* initialisation de la table des pointeurs */
     mov x0,x22
-    //ldr x1,qAdrtablePixels
-    //str x1,[x20,PNG_debut_pixel]
     mov x1,x23                // recup addresse zone pixel
     str x1,[x20,PNG_debut_pixel]
     mov x2,0                  // indice table pointeurs
@@ -1177,7 +1143,6 @@ nonPng:
 qAdrszMessErreurPNG:       .quad szMessErreurPNG
 qAdrqColorType:            .quad qColorType
 qAdrqBit_depth:            .quad qBit_depth
-qAdrtablePixels:           .quad tablePixels
 szVERSION:                 .asciz "1.6.36"
 .align 4                      //obligatoire pour réalignement instructions
 
