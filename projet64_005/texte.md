@@ -5,4 +5,4 @@ Programme creatfen641.s : création d'une simple fenêtre pour vérification fon
 Programme afficheurPNG.s : affichage dans une fenêtre X11 d'une image au format png.<br>
 Programme afficheurPNG2.s : idem mais la conversion de l'image s'effectue à partir d'un buffer en mémoire.<br>
 Programme afficheurPNG3.s : idem mais l'allocation de place necessaire s'effectue sur le tas.<br>
-Prohramme afficheurPNG4.s : idem mais amélioration du programme et chargement affichage autre image.<br> 
+Programme afficheurPNG4.s : idem mais amélioration du programme et chargement affichage autre image.<br> 
