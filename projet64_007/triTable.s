@@ -56,6 +56,7 @@ main:
     affichelib Exemple
                                   // chargement table avec des clé aléatoires
     mov x20,0                     // indice départ
+    mov x22,0                     // table vide, nombre de postes = zéro
     ldr x21,qAdrstTable
 1:
     mov x0,49                     // borne maxi
@@ -64,11 +65,12 @@ main:
     mov x1,x0                     // cle aléatoire
     mov x0,x21                    // adresse table
     mov x2,x20                    // valeur = N° enregistrement
+    mov x3,x22                    // nombre de postes
     bl insertionTable
+    mov x22,x0                    // maj nombre de postes
     add x20,x20,1
     cmp x20,NBPOSTESTABLE - 10    // chargement de 90 postes
     ble 1b
-    mov x22,x0                    // nombre de postes
                                   // affichage table
     affichelib Affichagetable
     mov x1,0                      // 1er enregistrement
@@ -112,7 +114,6 @@ main:
     bl rechdichoTable
     cmp x0,-1
     beq 4f
-    affregtit finrech 0
     mov x1,x0
     mov x0,x21
     bl affichageTable
@@ -189,26 +190,19 @@ rechSeqTable:
 /* x0 : adresse de la table  */
 /* x1 : cle */
 /* x2 : valeur */
+/* x3 : nombre de postes déja stockés */
 /* x0 : retourne le nombre d'enregistrement. */
 /* Attention pas de save des registres x9-x12 */
 insertionTable:
     stp x1,lr,[sp,-16]!        // save  registres
-    mov x9,#0
-    mov x10,table1_fin         // longueur d'un enregistrement
-1:
-    madd x12,x9,x10,x0         // calcul adresse enregistrement
-    ldr w11,[x12,table1_cle]   // clé à zéro ?
-    cbz w11,2f                 // oui -> insertion
-    add x9,x9,#1               // non enregistrement suivant
-    cmp x9,NBPOSTESTABLE       // nb de postes maxi ?
-    bge 99f                    // oui -> erreur
-    b 1b                       // sinon boucle
-2:
-    str w1,[x12,table1_cle]    // insertion à l'adresse trouvée
-    str w2,[x12,table1_valeur]
-    mov x0,x9                  // retourne le nombre de postes
-    b 100f
-99:                            // erreur taille table
+    mov x9,table1_fin
+    madd x10,x3,x9,x0          // calcul de l'adresse
+    str w1,[x10,table1_cle]    // insertion à l'adresse trouvée
+    str w2,[x10,table1_valeur]
+    add x0,x3,1
+    cmp x0,NBPOSTESTABLE       // nb de postes suivant = maxi ?
+    bne 100f                   // non -> ok
+                               // erreur taille table
     ldr x0,qadrszMessErreurTable
     mov x1,LGMESSERREURTABLE
     bl affichageMessSP
@@ -229,8 +223,8 @@ qadrszMessErreurTable:       .quad szMessErreurTable
 insertionTableTriee:
     stp x1,lr,[sp,-16]!        // save  registres
     mov x9,#0
-    cbz x3,4f
     mov x10,table1_fin         // longueur d'un enregistrement
+    cbz x0,4f                  // table vide ?
 1:
     madd x12,x9,x10,x0         // calcul adresse enregistrement
     ldr w11,[x12,table1_cle]   // clé > cle à inserer
