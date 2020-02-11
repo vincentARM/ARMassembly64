@@ -229,6 +229,7 @@ qadrszMessErreurTable:       .quad szMessErreurTable
 insertionTableTriee:
     stp x1,lr,[sp,-16]!        // save  registres
     mov x9,#0
+    cbz x3,4f
     mov x10,table1_fin         // longueur d'un enregistrement
 1:
     madd x12,x9,x10,x0         // calcul adresse enregistrement
