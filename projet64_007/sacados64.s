@@ -2,7 +2,7 @@
 /* Assembleur 64 bits ARM Raspberry  : Vincent Leboulou */
 /* modèle 3B+ 1GO Système LINUX 64 Bits Buster  voir github Sakaki */
 /*  */
-/* squelette programme asm 64 bits  */
+/* algorithmes d'optimisation adaptés au problème du sac à dos  asm 64 bits  */
 
 /************************************/
 /* Constantes                       */
