@@ -3,3 +3,5 @@ Traitement de tables en utilisant une fonction de hachage. Traitement des collis
 Idem mais le traitement des collisions s'effectue à l'aide de listes chainées rattachées à chaque poste : <b>hashListTable.s</b> <br>
 Routines de traitement d'une liste chainée simple : <b> routListCH1.s</b> <br>
 Routines de traitement d'une liste doublement chainée : <b> DblistCH.s </b>
+<br>
+Exemple : programe de résolution du Problème du Voyageur de Commerce à l'aide d'un algorithme génétique : <b> genPVC164.s </b><br>
