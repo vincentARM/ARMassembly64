@@ -5,4 +5,4 @@ Routines de traitement d'une liste chainée simple : <b> routListCH1.s</b> <br>
 Routines de traitement d'une liste doublement chainée : <b> DblistCH.s </b>
 <br>
 Exemple : programe de résolution du Problème du Voyageur de Commerce à l'aide d'un algorithme génétique : <b> genPVC164.s </b><br>
-Exemple : programme de résolution du problème du sac à dos en utilisant plus algorithme d'optimisation : <b> sacados64.s </b> <br>
+Exemple : programme de résolution du problème du sac à dos en utilisant plusieurs algorithmes d'optimisation : <b> sacados64.s </b> <br>
