@@ -6,3 +6,4 @@ Routines de traitement d'une liste doublement chainée : <b> DblistCH.s </b>
 <br>
 Exemple : programe de résolution du Problème du Voyageur de Commerce à l'aide d'un algorithme génétique : <b> genPVC164.s </b><br>
 Exemple : programme de résolution du problème du sac à dos en utilisant plusieurs algorithmes d'optimisation : <b> sacados64.s </b> <br>
+Exemple : programme d'un système multi-agents : application à un banc d'un poisson : <b> mAgents3.s </b> <br>
