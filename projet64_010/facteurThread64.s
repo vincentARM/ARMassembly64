@@ -820,7 +820,7 @@ divisionReg128U:
     cmp x1,0                   // verif que le dividende est > au diviseur
     cbnz x1,0f
     cmp x0,x2
-    bgt 0f
+    bhi 0f
     mov x3,x0
     mov x0,0
     b 100f
