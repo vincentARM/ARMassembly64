@@ -1,4 +1,4 @@
-TableOriginePuis10: 
+﻿TableOriginePuis10:  
  .double 0F10E-309  // poste 0
  .double 0F10E-308  // poste 1
  .double 0F10E-307  // poste 2
