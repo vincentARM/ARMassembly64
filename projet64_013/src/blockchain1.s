@@ -5,8 +5,9 @@
 /* attention : cet exemple est simpliste : pas de sauvegarde des portefeuilles, des cles */
 /* et de la blockchain */
 /* pas de calcul en mode distribué tout est local */
+/* compilation :  make PGM=blockchain1  */
 /************************************/
-/* Constantes                       */
+/* Constantes                       */ 
 /************************************/
 .include "./src/constantesARM64.inc"
 
@@ -42,6 +43,7 @@ qZoneT1:               .skip 16
 qZoneT2:               .skip 16
 qAdrTXUN:              .skip 8
 sZoneCalHash:          .skip 72
+HashProcess:           .skip (TAILLEHASH * 2) + 8
 dlBlockchain1:         .skip dllist_fin        // BlockChain double liste chainée
 stPortefeuilleA:       .skip porteF_fin        // structure portefeuille
 stPortefeuilleB:       .skip porteF_fin
@@ -229,12 +231,10 @@ main:                            // INFO: main
     
     //bl  afficherHashMap
      
-    afficherLib "Ajout transaction de virement 2"
+    afficherLib "Ajout transaction de virement 3"
     mov x1,x0                       // adresse TX créee par envoyer fonds
     mov x0,x23                      // adresse Bloc
     bl ajouterTransaction
-    
-    //bl  afficherHashMap
     
     afficherLib "Ajout bloc 2" 
     
@@ -877,48 +877,49 @@ calculerMerkleRoot:            // INFO: calculerMerkleRoot
     mov x19,x1
     //affregtit calculerMerkleRoot 0
     mov x20,sp                // save adresse pile départ 
-    sub sp,sp,16+128+16       // reservation place
+    sub sp,sp,16+48           // reservation place
     mov fp,sp                 // adresse liste chainée locale
     str xzr,[fp]              // init liste
     str xzr,[fp,8]
     cbz x0,99f                // liste des TX vide ?
-    //affmemtit chaineTX x0 6
-
     mov x2,0                  // compteur
-    ldr x3,[x0]               // debut liste des TX 
+    mov x3,x0                 // debut de liste des TX
     cbz x3,99f                // aucune transaction 
-    //affregtit debut 0
 1:
-    add x1,x3,llist_value   // adresse dune transaction
+    add x1,x3,llist_value     // adresse d'une transaction
     ldr x1,[x1,trans_id]      // identifiant TX
-    //affmemtit boucle1 x1  3
     mov x0,fp                 // adresse liste interne
-    bl insertElement
+    bl insererHash
     add x2,x2,1               // comptage TX
     ldr x3,[x3,llist_next]    // element suivant
     cmp x3,0
     bne 1b                    // et boucle
     
-    ldr x1,[fp]               // adresse previousTreeLayer
-    str x1,[fp,8]             // treeLayer
+    ldr x0,[fp]
+    //affmemtit  stockage x0   10
     
 2:
-    cmp x2,1                 // une seule transaction ?
+    cmp x2,1                   // une seule transaction ?
     ble 10f
-    str xzr,[fp,8]          // init liste treelayer
+    str xzr,[fp,8]             // init liste treelayer
     mov x2,0
-    ldr x3,[fp]             // premier element
-    ldr x4,[x3,llist_value] // transaction N - 1
-    ldr x5,[x3,llist_next]  // element suivant
+    ldr x4,[fp]                // premier element
 3:
-    cbz x5,8f                // fin de liste ?
-    ldr x6,[x5,llist_value]  // transaction N
-    add x1,fp,16             // adresse zone de recopie
-    mov x0,x4
-    //affmemtit tX1ID  x0  3
+    ldr x5,[x4,llist_next]     // element suivant
+    cbnz x5,35f                // fin de liste ?
+    add x0,fp,8                // nombre impair de hash
+    add x1,x5,hlist_hash       // donc il faut recopier le dernier
+    bl insererHash             // dans la liste
+    add x2,x2,1                // et le compter
+    b 8f
+35:                            // nous avons 2 hash 
+    ldr x1,qAdrHashProcess
+    add x8,x4,hlist_hash
+    add x6,x5,hlist_hash
     mov x0,0
 4:                           // boucle copie hash transaction N - 1 
-    ldr w3,[x4,x0]
+    ldr w3,[x8,x0]
+    rev w3,w3                // inversion octets
     str w3,[x1,x0]
     add x0,x0,4
     cmp x0,TAILLEHASH
@@ -927,44 +928,40 @@ calculerMerkleRoot:            // INFO: calculerMerkleRoot
     mov x0,0
 5:                           // Boucle copie hash transaction N
     ldr w3,[x6,x0]
+    rev w3,w3                // inversion octets
     str w3,[x1,x0]
     add x0,x0,4
     cmp x0,TAILLEHASH
     blt 5b
     add x1,x1,TAILLEHASH
-    strb wzr,[x1]            // 0 final 
+    strb wzr,[x1]                // 0 final 
     
-    add x0,fp,16             // adresse début zone copie
+    add x1,fp,16                 // adresse début zone reception
+    ldr x0,qAdrHashProcess       // pour calculer le nouveau hash
     //affmemtit avanthash x0 8
-    sub sp,sp,80                  // reserve 80 octets sur la pile
-    mov x1,sp                     // pour calculer le nouveau hash
     mov x3,x2                     // save compteur
     mov x2,TAILLEHASH * 2         // longueur de la zone
     bl computeSHA256LG            // calcul du hash complet
-    //mov x0,sp
-    //affmemtit "apres hash " x0 8
     mov x2,x3                     // restaur compteur
     add x0,fp,8                   // adresse liste treelayer
-    mov x1,sp                     // adresse du hash calculé
-    //affregtit avantinsert 0
-    bl insertElement              // pour insertion dans liste treelayer
+    add x1,fp,16                  // adresse du hash calculé
+    bl insererHash                // pour insertion dans liste treelayer
     add x2,x2,1                   // increment compteur
- 
-    mov x4,x6                     // maj transaction precedente avec transaction courante
-    ldr x5,[x5,llist_next]        // element liste suivant
-    b 3b                          // et boucle 
-    
+
+    ldr x4,[x5,llist_next]        // hash suivant
+    cbnz x4,3b
 8:
-    ldr x0,[fp,8]                 // adresse liste treelayer
-    str x0,[fp]                   // dans adresse liste previousTreeLayer
+    ldr x1,[fp]                   // inversion des 2 listes 
+    ldr x0,[fp,8]                 // 
+    str x0,[fp]                   // 
+    str x1,[fp,8]
     b 2b                          // et boucle 
 10:
-    //affregtit etiq10 0
     cbz x2,99f
-                        // recopie poste 1 dans zone retour
-    add x2,fp,8
+                                  // recopie poste 1 dans zone retour
+    mov x2,fp
     ldr x1,[x2]
-    ldr x1,[x1,llist_value]
+    add x1,x1,hlist_hash
     //affmemtit final x1 4
     mov x2,0
 11:
@@ -990,6 +987,48 @@ calculerMerkleRoot:            // INFO: calculerMerkleRoot
     ldp x3,x4,[sp],16        // restaur des  2 registres
     ldp x1,x2,[sp],16        // restaur des  2 registres
     ldp fp,lr,[sp],16        // restaur des  2 registres
+    ret
+qAdrHashProcess:     .quad HashProcess
+/******************************************************************/
+/*     affichage de la hashmap blockchain  pour vérificatio       */
+/******************************************************************/
+/* x0 adresse de la liste */
+/* x1 adresse du hash à insérer */
+insererHash:                    // INFO: insererHash
+    stp x1,lr,[sp,-16]!         // save  registres
+    stp x2,x3,[sp,-16]!         // save  registres
+    stp x4,x5,[sp,-16]!         // save  registres
+    mov x5,x0
+    mov x0,hlist_fin
+    bl reserverPlace
+    cmp x0,0
+    ble 99f                  // erreur allocation ?
+    str xzr,[x0,hlist_next]  // raz pointeur next
+    add x2,x0,hlist_hash     // adresse hash
+    mov x3,#0
+1:                           // copie du hash dans zone reservée
+    ldr w4,[x1,x3]
+    str w4,[x2,x3]
+    add x3,x3,#4
+    cmp x3,#TAILLEHASH
+    blt 1b
+                             // insertion dans la liste
+    cbnz x5,2f               // liste vide ?
+    str x0,[x5]              // premier element de la liste 
+    b 100f
+2:
+    mov x1,x5
+    ldr x5,[x1,hlist_next]
+    cbnz x5,2b
+    str x0,[x1,hlist_next]
+    b 100f
+99:
+    mov x0,#-1                   // error ?
+    
+100:
+    ldp x4,x5,[sp],16           // restaur des  2 registres
+    ldp x2,x3,[sp],16           // restaur des  2 registres
+    ldp x1,lr,[sp],16           // restaur des  2 registres
     ret
 /******************************************************************/
 /*     affichage de la hashmap blockchain  pour vérificatio       */

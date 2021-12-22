@@ -87,6 +87,14 @@ llist_value:                   // element value
     .struct  llist_value + 8
 llist_fin:
 
+/* structure liste chainée spécial hash */
+    .struct  0
+hlist_next:                    // next element
+    .struct  hlist_next + 8
+hlist_hash:                   // hash sur 32 caractères
+    .struct  hlist_hash + 32    
+hlist_fin:
+
 /* structure Double liste chainée */
     .struct  0
 dllist_head:                    // head node

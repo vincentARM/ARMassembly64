@@ -14,6 +14,6 @@
 .equ TAILLETIMBRE,     8
 .equ TAILLELONGUEUR,     8
 .equ DIFFICULTE,      3
-.equ MAXI,    10                // nombre d'élement maxi de la hashmap
+.equ MAXI,    20                // nombre d'élement maxi de la hashmap
 .equ LIMIT, 32                  // nombre d'octets pour le hachage de la clé
 .equ COEFF, 80                  // taux de remplissage de la hashmap 80 = 80%
