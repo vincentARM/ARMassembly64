@@ -3,14 +3,17 @@
 /*********************************************/
 /*constantes */
 /********************************************/
-.include "../constantesARM64.inc"
+.equ STDIN,    0      // Linux input console
+.equ STDOUT,   1      // Linux output console
 
 .equ CHARPOS,     '@'
 
 .equ IOCTL,        29
 .equ OPEN,         56
 .equ CLOSE,        57
-
+.equ READ,         63 
+.equ WRITE,        64 
+.equ EXIT,         93 
 
 .equ O_RDWR,   0x0002          // read and write
 
