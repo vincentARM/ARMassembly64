@@ -18,4 +18,9 @@ id : BCM2708 FB  size : 1536000
 
 Variables info : 800 * 480  Bits par pixel : 32
 
+3e program test : frametest464
+
+draw horizontal line, vertical line , other line and circle.
+
+see result image in same directory.
 
