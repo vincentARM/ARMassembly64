@@ -6,6 +6,8 @@ id : vc4drmfb  size : 768000
 
 Variables info : 800 * 480  Bits par pixel : 16
 
+=======================================================
+
 Second programm test :  frametest364   
 
 Displays the blue color on half of the screen. Overwrites the standard screen of the raspberry pi
@@ -18,9 +20,19 @@ id : BCM2708 FB  size : 1536000
 
 Variables info : 800 * 480  Bits par pixel : 32
 
+=======================================================
+
 3e program test : frametest464
 
 draw horizontal line, vertical line , other line and circle.
 
 see result image in same directory.
+
+======================================================
+4eme program  : frametest564
+
+Load a bmp image and display 
+
+see result image in same directory.
+
 
